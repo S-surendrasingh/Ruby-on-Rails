@@ -1,0 +1,40 @@
+version: '3.9'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/myapp
+    ports:
+      - "${PORT}:${SERVER_PORT}"
+    depends_on:
+      - db
+    networks:
+      - myapp-network # Backend connected to the shared network
+    environment:
+      SERVER_PORT: 8083
+      DB_HOST: db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - myapp-network # Database connected to the shared network
+
+networks:
+  myapp-network: # Shared network for backend and database
+    name: portal # Matches the external network name
+    external: true # Indicates the network already exists
+
+volumes:
+  pgdata: # PostgreSQL persistent data volume
+    name: postgres # Matches the existing external volume
+    external: true
